@@ -5,6 +5,7 @@
  */
 package com.krismorte.dragndrop;
 
+import com.krismorte.escala2.model.Analista;
 import javax.swing.JPanel;
 
 /**
@@ -12,9 +13,11 @@ import javax.swing.JPanel;
  * @author c007329
  */
 public interface iDropAction {
-    
+
     public void addJPanel(JPanel jPanel);
-    public void addText(String text);
+
+    public void addAnalista(Analista analista);
+
     public void process();
-    
+
 }

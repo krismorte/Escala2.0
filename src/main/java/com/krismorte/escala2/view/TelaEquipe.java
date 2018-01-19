@@ -176,14 +176,18 @@ public class TelaEquipe extends javax.swing.JDialog implements ActionListener {
         if (txtNome.getText().equals("") | equipeHorario.isEmpty()) {
             JOptionPane.showMessageDialog(null, "Digite um nome e esolha os horários");
         } else {
-            Equipe equipe = new Equipe();
-            equipe.setNome(txtNome.getText());
+            try {
+                Equipe equipe = new Equipe();
+                equipe.setNome(txtNome.getText());
 
-            crudService.salvarEquipe(equipe, equipeHorario);
-            JOptionPane.showMessageDialog(null, "Salvo com sucesso!");
-            equipes.add(equipe);
-            txtNome.setText("");
-            exibeTabela();
+                crudService.salvarEquipe(equipe, equipeHorario);
+                JOptionPane.showMessageDialog(null, "Salvo com sucesso!");
+                equipes.add(equipe);
+                txtNome.setText("");
+                exibeTabela();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, ex.getMessage());
+            }
         }
     }//GEN-LAST:event_btnSalvarActionPerformed
 

@@ -3,19 +3,20 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.krismorte.escala2.dao;
-
-import com.krismorte.escala2.model.Equipe;
+package com.krismorte.escala2.model;
 
 /**
  *
  * @author c007329
  */
-public class EquipeDao extends GenericDao<Equipe> {
+public enum Nivel {
 
-    public EquipeDao() {
-        super(Equipe.class);
+    Pleno("Pleno"), Senior("Senior");
+
+    private String descricao;
+
+    private Nivel(String descricao) {
+        this.descricao = descricao;
     }
 
-    
 }

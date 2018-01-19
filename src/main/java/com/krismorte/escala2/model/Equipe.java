@@ -6,7 +6,6 @@
 package com.krismorte.escala2.model;
 
 import java.util.List;
-import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
@@ -73,5 +72,9 @@ public class Equipe extends IdentityAndAudit {
         this.equipeHorarios = equipeHorarios;
     }
 
+    @Override
+    public String toString() {
+        return getNome();
+    }
 
 }

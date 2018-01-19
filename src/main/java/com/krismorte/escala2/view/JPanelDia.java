@@ -1,9 +1,13 @@
 package com.krismorte.escala2.view;
 
+import com.krismorte.escala2.model.Analista;
+import com.krismorte.escala2.model.Escala;
+import com.krismorte.escala2.model.Horario;
 import com.krismorte.escala2.util.Tradutor;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -21,58 +25,59 @@ import javax.swing.border.TitledBorder;
 public class JPanelDia extends JPanel {
 
     private JPanelMes panelMes;
-    private List<String> horarios;
+    private List<Horario> horarios;
+    private List<Escala> escalas;
     private String title;
     private LocalDate data;
+    private Horario horarioEscolhido;
     //public List<String> participante = new ArrayList<>();
 
-    public JPanelDia(JPanelMes panelMes, LocalDate data, List<String> horarios) {
+    public JPanelDia(JPanelMes panelMes, LocalDate data, List<Escala> escalas, List<Horario> horarios) {
         this.title = JPanelDia.titleToString(data);//data.getDayOfMonth() + " " + data.format(Tradutor.getDayFormater());
         this.panelMes = panelMes;
         this.horarios = horarios;
+        this.escalas = escalas;
         this.data = data;
-        /*if (title.contains("SATURDAY")) {
-            title = title.replace("SATURDAY", "SAB");
-        } else if (title.contains("SUNDAY")) {
-            title = title.replace("SUNDAY", "DOM");
-        }*/
 
-        //this.setBorder(BorderFactory.createTitledBorder(title));
         TitledBorder border = BorderFactory.createTitledBorder(title);
         border.setTitleFont(new Font("times new roman", Font.BOLD, 14));
-        this.setBorder(border);
-        this.setLayout(new GridLayout(3, 1));
-        this.setFocusable(true);
-        this.setOpaque(false);
+        setBorder(border);
+        setLayout(new GridLayout(3, 1));
+        setFocusable(true);
+        setOpaque(false);
         adicionaPanelHorarios();
     }
 
     private void adicionaPanelHorarios() {
-        for (String s : horarios) {
-            DNDLabelPanel pane1 = new DNDLabelPanel(this/*new AcaoJPanel(this)*/, s);
+        List<Escala> escalasPorhorario = new ArrayList<>();
+        for (Horario s : horarios) {
+            escalasPorhorario.clear();
+            for (Escala escala : escalas) {
+                if (escala.getHorario().equals(s)) {
+                    escalasPorhorario.add(escala);
+                }
+            }
+            DNDLabelPanel pane1 = new DNDLabelPanel(this, s, escalasPorhorario);
             this.add(pane1);
         }
     }
 
-    public boolean addParticipante(String text) {
-        return panelMes.addParticipante(this, text);
-        /*for (String s : panelMes.getParticipante()) {
-            if (s.equals(text)) {
-                JOptionPane.showMessageDialog(null, "Participante \"" + text + "\" já adicionado a essa dia");
-                return false;
-            }
-        }
-        participante.add(text);*/
+    public boolean addParticipante(Analista analista, Horario horario) {
+        horarioEscolhido = horario;
+        return panelMes.addParticipante(this, analista);
     }
 
-    public void removerParticipante(String text) {
-        panelMes.removerParticipante(title, text);
-        /*for (String s : participante) {
-            if (s.equals(text)) {
-                participante.remove(s);
-                break;
-            }
-        }*/
+    public void removerParticipante(Analista analista) {
+        panelMes.removerParticipante(data, analista);
+    }
+
+    public Horario horarioEscolhido() {
+        return horarioEscolhido;
+    }
+
+    public Analista encontraAnalista(String noma) {
+        return panelMes.encontraAnalista(noma);
+
     }
 
     public String getTitle() {

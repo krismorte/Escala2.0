@@ -6,6 +6,9 @@
 package com.krismorte.escala2.model;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -13,13 +16,16 @@ import javax.persistence.Table;
  *
  * @author c007329
  */
+@Entity
 @Table(name = "dbo.scl_analista")
-public class Analista extends IdentityAndAudit{
-    
+public class Analista extends IdentityAndAudit {
+
     @Column(length = 70)
     private String nome;
     @OneToOne
     private Equipe equipe;
+    @Enumerated(EnumType.ORDINAL)
+    private Nivel nivel;
 
     public Analista() {
     }
@@ -51,7 +57,20 @@ public class Analista extends IdentityAndAudit{
     public void setEquipe(Equipe equipe) {
         this.equipe = equipe;
     }
-    
-    
+
+    /**
+     * @return the nivel
+     */
+    public Nivel getNivel() {
+        return nivel;
+    }
+
+    /**
+     * @param nivel the nivel to set
+     */
+    public void setNivel(Nivel nivel) {
+        this.nivel = nivel;
+    }
+
     
 }

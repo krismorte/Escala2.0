@@ -5,6 +5,7 @@
  */
 package com.krismorte.escala2.model;
 
+import com.towel.el.annotation.Resolvable;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -17,11 +18,16 @@ import javax.persistence.MappedSuperclass;
  * @author c007329
  */
 @MappedSuperclass
-public abstract class IdentityAndAudit implements Serializable, AuditableEnitity{
-     @Id
+public abstract class IdentityAndAudit implements Serializable, AuditableEnitity {
+
+    @Resolvable(colName = "ID")
+    @Id
     private final String id;
+    @Resolvable(colName = "Data Criação")
     private LocalDateTime createTime;
+    @Resolvable(colName = "Data Atualização")
     private LocalDateTime updateTime;
+    @Resolvable(colName = "Ativo")
     private boolean active;
 
     public IdentityAndAudit() {
@@ -61,7 +67,7 @@ public abstract class IdentityAndAudit implements Serializable, AuditableEnitity
     public void setActive(boolean active) {
         this.active = active;
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

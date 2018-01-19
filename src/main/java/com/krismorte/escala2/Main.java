@@ -6,7 +6,10 @@
 package com.krismorte.escala2;
 
 import com.alee.laf.WebLookAndFeel;
+import com.krismorte.escala2.model.ConexaoJPA;
+import com.krismorte.escala2.util.ConexaoUtil;
 import com.krismorte.escala2.view.Tela;
+import java.util.Properties;
 import javax.swing.SwingUtilities;
 
 /**
@@ -32,7 +35,23 @@ public class Main {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 WebLookAndFeel.install();
-                Tela tela = new Tela();
+
+                boolean conexaoOk = false;
+                Properties prop = null;
+                if (Conf.fileExists()) {
+                    conexaoOk = true;
+                    prop = Conf.load();
+                }
+                if (conexaoOk) {
+                    try {
+                        ConexaoJPA conexaoJPA = ConexaoJPA.loadFromProperties(prop);
+                        conexaoOk = ConexaoUtil.test(conexaoJPA);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+
+                Tela tela = new Tela(conexaoOk);
                 tela.setLocationRelativeTo(null);
                 tela.setVisible(true);
             }

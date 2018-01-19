@@ -1,7 +1,7 @@
 package com.krismorte.escala2.view;
 
-
 import com.krismorte.dragndrop.iDropAction;
+import com.krismorte.escala2.model.Analista;
 import java.awt.Component;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -20,7 +20,7 @@ public class AcaoJPanel implements iDropAction {
 
     private JPanel panel;
     private JPanelDia panelDia;
-    private String text;
+    private Analista analista;
 
     public AcaoJPanel(JPanelDia panelDia) {
         this.panelDia = panelDia;
@@ -32,14 +32,14 @@ public class AcaoJPanel implements iDropAction {
             for (Component c : panel.getComponents()) {
                 if (c instanceof JLabel) {
                     JLabel label = (JLabel) c;
-                    if (label.getText().equals(text)) {
-                        JOptionPane.showMessageDialog(null, "Nome \"" + text + "\" já adicionado a essa horário");
+                    if (label.getText().equals(analista.getNome())) {
+                        JOptionPane.showMessageDialog(null, "Nome \"" + analista.getNome() + "\" já adicionado a essa horário");
                         return;
                     }
                 }
             }
         }
-        if (panelDia.addParticipante(text)) {
+        if (panelDia.addParticipante(analista, panelDia.horarioEscolhido())) {
             //panel.add(new JLabel(text));
             //panel.add(new JPanelAnalista(panelDia,text));
             panel.validate();
@@ -53,9 +53,8 @@ public class AcaoJPanel implements iDropAction {
     }
 
     @Override
-    public void addText(String text) {
-        this.text = text;
+    public void addAnalista(Analista analista) {
+        this.analista = analista;
     }
 
 }
-

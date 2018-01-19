@@ -5,6 +5,7 @@
  */
 package com.krismorte.escala2.model;
 
+import com.towel.el.annotation.Resolvable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -17,13 +18,19 @@ import javax.persistence.Table;
 @Table(name = "dbo.scl_horario")
 public class Horario extends IdentityAndAudit {
 
+    @Resolvable(colName = "Descrição")
     @Column(length = 30)
     private String descricao;
     private int dia;
+    @Resolvable(colName = "Horario Inicial")
+    @Column(length = 10)
     private String horarioInicial;
+    @Resolvable(colName = "Horario Final")
+    @Column(length = 10)
     private String horarioFinal;
 
-    public Horario() {
+    public Horario() {        
+        
     }
 
     /**
@@ -87,7 +94,28 @@ public class Horario extends IdentityAndAudit {
         return diaToString() + ": " + getDescricao();
     }
 
-    private String diaToString() {
+    public String diaToString() {
+        switch (dia) {
+            case 0:
+                return "DOM";
+            case 1:
+                return "SEG";
+            case 2:
+                return "TER";
+            case 3:
+                return "QUA";
+            case 4:
+                return "QUI";
+            case 5:
+                return "SEX";
+            case 6:
+                return "SAB";
+            default:
+                return "ERRO";
+        }
+    }
+
+    private String diaToString(int dia) {
         switch (dia) {
             case 0:
                 return "DOM";

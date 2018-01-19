@@ -1,19 +1,21 @@
 package com.krismorte.escala2.view;
 
+import com.krismorte.escala2.model.Analista;
 import com.krismorte.escala2.model.Equipe;
+import com.krismorte.escala2.model.Horario;
 import com.krismorte.escala2.service.CrudService;
 import com.krismorte.escala2.util.Tradutor;
+import com.towel.combo.swing.ObjectComboBoxModel;
 import java.awt.GridLayout;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JComponent;
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.TransferHandler;
+import javax.swing.JOptionPane;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -25,95 +27,84 @@ import javax.swing.TransferHandler;
  * @author c007329
  */
 public class Tela extends javax.swing.JFrame {
-
-    private LocalDate mesAtual;
+    
+    private ObjectComboBoxModel<Equipe> boxModel;
     private List<DNDLabelPanel> panels = new ArrayList<>();
+    
+    private LocalDate mesAtual;
+    private List<Analista> analistas;
     private List<Equipe> equipes = new ArrayList<>();
+    private List<Horario> horarios = new ArrayList<>();
     private CrudService crudService = new CrudService();
 
     /**
      * Creates new form Tela
      */
-    public Tela() {
+    public Tela(boolean ConexaoOk) {
         initComponents();
         init();
+        if (!ConexaoOk) {
+            JOptionPane.showMessageDialog(null, "Falha na conexão com banco de dados");
+            btnEquipe.setEnabled(false);
+            btnHorario.setEnabled(false);
+            btnAnalista.setEnabled(false);
+            boxEquipe.setEnabled(false);
+        }
     }
-
+    
     private void init() {
+        setLogo();
+        loadBox();
         splitPanel.setDividerLocation(200);
         this.setExtendedState(this.getExtendedState() | JFrame.MAXIMIZED_BOTH);
-
-        mesAtual = LocalDate.of(LocalDateTime.now().getYear(), LocalDateTime.now().getMonthValue(), 1);
+        
         panelAnalistas.setLayout(new GridLayout(20, 1));
         panelAnalistas.setOpaque(false);
-        panelAnalistas.add(getLabel("Krisnamourt da silva C filho - C007329"));
-        panelAnalistas.add(getLabel("Chico Renan"));
-
-        loadBox();
-        updateMoth(mesAtual);
+        mesAtual = LocalDate.of(LocalDateTime.now().getYear(), LocalDateTime.now().getMonthValue(), 1);
     }
-
+    
+    private void setLogo() {
+        try {
+            setIconImage(ImageIO.read(ClassLoader.getSystemResource("img/calendar-20-20.png")));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     private void loadBox() {
         equipes = crudService.listarEquipes();
-        equipes.forEach(equipe -> boxEquipe.addItem(equipe.getNome()));
+        boxModel = new ObjectComboBoxModel<Equipe>();
+        boxModel.setData(equipes);
+        boxEquipe.setModel(boxModel);
+        boxEquipe.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (boxModel.getSelectedObject() != null) {
+                    loadJLabel();
+                    atualizaCalendario(mesAtual);
+                }
+            }
+        });
     }
-
-    private void updateMoth(LocalDate data) {
+    
+    private void loadJLabel() {
+        analistas = crudService.listarAnalistasPorEquipe(boxModel.getSelectedObject());
+        panelAnalistas.removeAll();
+        panelAnalistas.revalidate();
+        panelAnalistas.repaint(); // sometimes needed, this appears to be one of them
+        //analistas.forEach(analista -> panelAnalistas.add(getLabel(analista.getNome())));
+        //analistas.forEach(analista -> panelAnalistas.add(new JLabelAnalista(analista)));
+        analistas.forEach(analista -> panelAnalistas.add(JLabelAnalista.transferable(analista)));
+    }
+    
+    private void atualizaCalendario(LocalDate data) {
+        if (boxModel.getSelectedObject() != null) {
+            horarios = crudService.listarHorariosPorEquipe(boxModel.getSelectedObject());
+        }
         labelMes.setText(mesAtual.format(Tradutor.getMothFormater()) + "/" + mesAtual.getYear());
         panelCalendario.removeAll();
         panelCalendario.setLayout(new GridLayout(1, 1));
-        panelCalendario.add(new JPanelMes(data));
-    }
-
-    /*private void updateMoth(LocalDate data) {
-        panelCalendario.removeAll();
-        int ultimoDiaDoMes = LocalDate.now().with(TemporalAdjusters.lastDayOfMonth()).getDayOfMonth();
-        
-        labelMes.setText(data.getMonth().toString()+"/"+data.getYear());
-        
-        panelCalendario.setLayout(new GridLayout(2, 7));
-        panelCalendario.setOpaque(false);        
-        for (int i = 1; i <= ultimoDiaDoMes; i++) {
-            if (data.getDayOfWeek().toString().equals("SATURDAY") || data.getDayOfWeek().toString().equals("SUNDAY")) {
-                //panelCalendario.add(getPanel(data.getDayOfMonth() + " " + data.getDayOfWeek()));
-                panelCalendario.add(new JPanelDia(data.getDayOfMonth() + " " + data.getDayOfWeek(), horarios));
-            }
-
-            data = data.plusDays(1);
-        }
-    }*/
-
- /*private DNDImagePanel getDNDImagePane(String title) {
-        DNDImagePanel pane1 = new DNDImagePanel(title);
-        panels.add(pane1);
-        return pane1;
-    }*/
- /*private DNDLabelPanel getPanel(String title) {
-        if (title.contains("SATURDAY")) {
-            title = title.replace("SATURDAY", "SAB");
-        } else if (title.contains("SUNDAY")) {
-            title = title.replace("SUNDAY", "DOM");
-        }
-        DNDLabelPanel pane1 = new DNDLabelPanel(new AcaoJPanel(), title);
-        panels.add(pane1);
-        return pane1;
-    }*/
-    private JLabel getLabel(String text) {
-        JLabel label = new JLabel(text);
-        final String propertyName = "text";
-        label.setTransferHandler(new TransferHandler(propertyName));
-
-        label.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent evt) {
-                JComponent comp = (JComponent) evt.getSource();
-                TransferHandler th = comp.getTransferHandler();
-
-                th.exportAsDrag(comp, evt, TransferHandler.COPY);
-            }
-        });
-
-        return label;
+        panelCalendario.add(new JPanelMes(data, boxModel.getSelectedObject(), analistas, horarios));
     }
 
     /**
@@ -132,22 +123,23 @@ public class Tela extends javax.swing.JFrame {
         btnNext = new javax.swing.JButton();
         labelMes = new javax.swing.JLabel();
         btnHorario = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        btnEquipe = new javax.swing.JButton();
+        btnAnalista = new javax.swing.JButton();
         boxEquipe = new javax.swing.JComboBox<>();
-        btnGerar = new javax.swing.JButton();
+        btnService = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Controle de Escalas");
 
         javax.swing.GroupLayout panelCalendarioLayout = new javax.swing.GroupLayout(panelCalendario);
         panelCalendario.setLayout(panelCalendarioLayout);
         panelCalendarioLayout.setHorizontalGroup(
             panelCalendarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 970, Short.MAX_VALUE)
+            .addGap(0, 1061, Short.MAX_VALUE)
         );
         panelCalendarioLayout.setVerticalGroup(
             panelCalendarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 535, Short.MAX_VALUE)
+            .addGap(0, 558, Short.MAX_VALUE)
         );
 
         splitPanel.setRightComponent(panelCalendario);
@@ -160,7 +152,7 @@ public class Tela extends javax.swing.JFrame {
         );
         panelAnalistasLayout.setVerticalGroup(
             panelAnalistasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 535, Short.MAX_VALUE)
+            .addGap(0, 558, Short.MAX_VALUE)
         );
 
         splitPanel.setLeftComponent(panelAnalistas);
@@ -185,6 +177,7 @@ public class Tela extends javax.swing.JFrame {
         labelMes.setText("jLabel1");
         labelMes.setOpaque(true);
 
+        btnHorario.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         btnHorario.setText("horario");
         btnHorario.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -192,16 +185,29 @@ public class Tela extends javax.swing.JFrame {
             }
         });
 
-        jButton2.setText("equipe");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        btnEquipe.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btnEquipe.setText("equipe");
+        btnEquipe.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                btnEquipeActionPerformed(evt);
             }
         });
 
-        jButton3.setText("analista");
+        btnAnalista.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btnAnalista.setText("analista");
+        btnAnalista.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAnalistaActionPerformed(evt);
+            }
+        });
 
-        btnGerar.setText("...");
+        btnService.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/service-20-20.png"))); // NOI18N
+        btnService.setToolTipText("sistema");
+        btnService.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnServiceActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -217,15 +223,15 @@ public class Tela extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addComponent(btnNext, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(boxEquipe, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnGerar)
+                        .addComponent(boxEquipe, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton3)
+                        .addComponent(btnAnalista)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2)
+                        .addComponent(btnEquipe)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnHorario)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnService)
                         .addContainerGap())
                     .addComponent(splitPanel, javax.swing.GroupLayout.Alignment.TRAILING)))
         );
@@ -233,30 +239,43 @@ public class Tela extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(8, 8, 8)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnAfter)
-                    .addComponent(btnNext)
-                    .addComponent(labelMes)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btnHorario)
-                    .addComponent(jButton2)
-                    .addComponent(jButton3)
-                    .addComponent(boxEquipe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnGerar))
+                    .addComponent(btnEquipe)
+                    .addComponent(btnAnalista)
+                    .addComponent(btnService))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(splitPanel))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(13, 13, 13)
+                        .addComponent(boxEquipe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(8, 8, 8)
+                        .addComponent(labelMes))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addComponent(btnNext))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addComponent(btnAfter)))
+                .addGap(564, 564, 564))
         );
+
+        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {btnAnalista, btnEquipe, btnHorario, btnService});
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNextActionPerformed
         mesAtual = mesAtual.plusMonths(1);
-        updateMoth(mesAtual);
+        atualizaCalendario(mesAtual);
     }//GEN-LAST:event_btnNextActionPerformed
 
     private void btnAfterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAfterActionPerformed
         mesAtual = mesAtual.minusMonths(1);
-        updateMoth(mesAtual);
+        atualizaCalendario(mesAtual);
     }//GEN-LAST:event_btnAfterActionPerformed
 
     private void btnHorarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHorarioActionPerformed
@@ -265,43 +284,35 @@ public class Tela extends javax.swing.JFrame {
         horario.setVisible(true);
     }//GEN-LAST:event_btnHorarioActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void btnEquipeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEquipeActionPerformed
         TelaEquipe equipe = new TelaEquipe(this, true);
         equipe.setLocationRelativeTo(null);
         equipe.setVisible(true);
-    }//GEN-LAST:event_jButton2ActionPerformed
+        loadBox();
+    }//GEN-LAST:event_btnEquipeActionPerformed
+
+    private void btnAnalistaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalistaActionPerformed
+        TelaAnalista equipe = new TelaAnalista(this, true);
+        equipe.setLocationRelativeTo(null);
+        equipe.setVisible(true);
+    }//GEN-LAST:event_btnAnalistaActionPerformed
+
+    private void btnServiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnServiceActionPerformed
+        TelaSistema sis = new TelaSistema(this, true);
+        sis.setLocationRelativeTo(null);
+        sis.setVisible(true);
+    }//GEN-LAST:event_btnServiceActionPerformed
 
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Tela.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Tela.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Tela.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Tela.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
+
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Tela().setVisible(true);
+                new Tela(false).setVisible(true);
             }
         });
     }
@@ -309,11 +320,11 @@ public class Tela extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<String> boxEquipe;
     private javax.swing.JButton btnAfter;
-    private javax.swing.JButton btnGerar;
+    private javax.swing.JButton btnAnalista;
+    private javax.swing.JButton btnEquipe;
     private javax.swing.JButton btnHorario;
     private javax.swing.JButton btnNext;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
+    private javax.swing.JButton btnService;
     private javax.swing.JLabel labelMes;
     private javax.swing.JPanel panelAnalistas;
     private javax.swing.JPanel panelCalendario;

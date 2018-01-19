@@ -20,7 +20,7 @@ public class HorarioDao extends GenericDao<Horario> {
     }
 
     public List<Horario> listByEquipe(Equipe equipe) {
-        return getEntityManager().createQuery("select eh.horario from EquipeHorario eh where eh.equipe=:equipe",
+        return getEntityManager().createQuery("select eh.horario from EquipeHorario eh where eh.equipe=:equipe order by eh.horario.dia, eh.horario.horarioInicial",
                 Horario.class)
                 .setParameter("equipe", equipe)
                 .getResultList();

@@ -5,12 +5,11 @@
  */
 package com.krismorte.escala2.view;
 
-import java.awt.Dimension;
+import com.krismorte.escala2.model.Analista;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
@@ -21,12 +20,16 @@ public class JPanelAnalista extends JPanel implements ActionListener {
 
     private DNDLabelPanel panelDia;
     private String texto;
+    private Analista analista;
 
-    public JPanelAnalista(DNDLabelPanel panel, String texto) {
+    public JPanelAnalista(DNDLabelPanel panel, Analista analista) {
         this.setLayout(new GridLayout(1, 2));
         this.panelDia = panel;
-        this.texto = texto;
-        this.add(new JLabel(texto));
+        this.analista = analista;
+        this.texto = analista.getNome();
+        //this.add(new JLabelAnalista(analista));
+        this.add(JLabelAnalista.deafult(analista));
+
         JButton btn = new JButton("remover");
         btn.addActionListener(this);
         this.add(btn);
@@ -34,6 +37,7 @@ public class JPanelAnalista extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        System.out.println("com.krismorte.escala2.view.JPanelAnalista.actionPerformed()");
         panelDia.removeAnalista(this);
     }
 
@@ -41,4 +45,9 @@ public class JPanelAnalista extends JPanel implements ActionListener {
         return texto;
     }
 
+    public Analista getAnalista() {
+        return analista;
+    }
+    
+    
 }

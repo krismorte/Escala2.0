@@ -7,14 +7,16 @@ package com.krismorte.escala2.view;
 
 import com.krismorte.escala2.model.Horario;
 import com.krismorte.escala2.service.CrudService;
-import com.krismorte.escala2.util.BeanTableModel;
-import com.krismorte.escala2.util.MyJTable;
-import com.krismorte.escala2.util.ScreenUtil;
-import java.awt.BorderLayout;
+import com.towel.el.annotation.AnnotationResolver;
+import com.towel.el.annotation.Resolvable;
+import com.towel.swing.table.ObjectTableModel;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 
 /**
  *
@@ -22,9 +24,12 @@ import javax.swing.JOptionPane;
  */
 public class TelaHorario extends javax.swing.JDialog {
 
+    private AnnotationResolver resolver = new AnnotationResolver(HorarioTela.class);
+    private ObjectTableModel<HorarioTela> tableModel = new ObjectTableModel<HorarioTela>(resolver, "diaSemana,descricao,active");
     private CrudService crudService = new CrudService();
-    private List<Horario> horarios = new ArrayList<>();
-    private MyJTable tabelaHorarios;
+    private List<HorarioTela> horarios = new ArrayList<>();
+    private JTable tabela;
+    //private MyJTable tabelaHorarios;
 
     /**
      * Creates new form TelaHorario
@@ -36,7 +41,10 @@ public class TelaHorario extends javax.swing.JDialog {
     }
 
     private void init() {
-        horarios = crudService.listarHorarios();
+        //horarios = crudService.listarHorarios();
+        for (Horario horario : crudService.listarHorarios()) {
+            horarios.add(new HorarioTela(horario));
+        }
         exibeTabela();
     }
 
@@ -153,19 +161,40 @@ public class TelaHorario extends javax.swing.JDialog {
         if (txtHorarioInicial.getText().equals("") || txtHorarioFinal.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Ambos os horários são obeigatórios");
         } else {
-            Horario horario = new Horario();
+             Horario horario = new Horario();
             horario.setDia(boxDia.getSelectedIndex());
             horario.setDescricao(txtHorarioInicial.getText() + "-" + txtHorarioFinal.getText());
             horario.setHorarioInicial(txtHorarioInicial.getText());
             horario.setHorarioFinal(txtHorarioFinal.getText());
             crudService.salvarHorario(horario);
             JOptionPane.showMessageDialog(null, "Salvo com sucesso!");
-            horarios.add(horario);
+            horarios.add(new HorarioTela(horario));
             exibeTabela();
+            
         }
     }//GEN-LAST:event_btnAddActionPerformed
 
     private void exibeTabela() {
+
+        tableModel.setData(horarios);
+        tabela = new JTable(tableModel);
+        JScrollPane pane = new JScrollPane();
+        pane.setViewportView(tabela);
+        tabela.setPreferredSize(new Dimension(400, 200));
+        /*tabela.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() >= 2) {
+                    BaixarDespesa.exibir(tableModel.getValue(tabelaDespesas.getSelectedRow()));
+                    buscar();
+                }
+            }*
+        });*/
+
+        panelHorarios.removeAll();
+        panelHorarios.setLayout(new GridLayout(1, 1));
+        panelHorarios.add(pane);
+
+        /*
         BeanTableModel<Horario> modelo = new BeanTableModel<>(Horario.class);
         modelo.addColumn("descricao", "descricao", BeanTableModel.EditMode.EDITABLE);
         modelo.addColumn("dia", "dia");
@@ -183,7 +212,33 @@ public class TelaHorario extends javax.swing.JDialog {
         //tabela = reTweetService.getJTable(listaTweets);
         panelHorarios.add(ScreenUtil.getJScroll(tabelaHorarios), BorderLayout.CENTER);
         panelHorarios.validate();
-        txtTotal.setText("" + horarios.size());
+        txtTotal.setText("" + horarios.size());*/
+    }
+
+    private class HorarioTela extends Horario {
+
+        @Resolvable(colName = "Horarios")
+        private Horario horario;
+        @Resolvable(colName = "Dia Semana")
+        private String diaSemana;
+
+        public HorarioTela(Horario horario) {
+            this.horario = horario;
+            this.diaSemana = horario.diaToString();
+            setDescricao(horario.getDescricao());
+            setHorarioFinal(horario.getHorarioFinal());
+            setHorarioInicial(horario.getHorarioInicial());
+            setActive(horario.getActive());
+        }
+
+        public String getDiaSemana() {
+            return diaSemana;
+        }
+
+        public Horario getHorario() {
+            return horario;
+        }
+
     }
 
     /**

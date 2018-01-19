@@ -3,19 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.krismorte.escala2.dao;
-
-import com.krismorte.escala2.model.Equipe;
+package dao;
 
 /**
  *
  * @author c007329
  */
-public class EquipeDao extends GenericDao<Equipe> {
+public class TesteModelDao extends GenericDaoTeste<TesteModel> {
 
-    public EquipeDao() {
-        super(Equipe.class);
+    public TesteModelDao() {
+        super(TesteModel.class);
     }
 
-    
 }

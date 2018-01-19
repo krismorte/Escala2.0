@@ -5,11 +5,15 @@
  */
 package com.krismorte.escala2.view;
 
+import com.krismorte.escala2.model.Analista;
+import com.krismorte.escala2.model.Escala;
+import com.krismorte.escala2.model.Horario;
 import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -25,18 +29,30 @@ import static javax.swing.TransferHandler.COPY;
 public class DNDLabelPanel extends JPanel {
 
     private JPanelDia panelDia;
+    private Horario horario;
+    private List<Escala> escalas;
 
-    public DNDLabelPanel(JPanelDia panelDia, String title) {
+    public DNDLabelPanel(JPanelDia panelDia, Horario horario, List<Escala> escalas) {
         this.panelDia = panelDia;
-        this.setBorder(BorderFactory.createTitledBorder(title));
+        this.horario = horario;
+        this.escalas = escalas;
+        this.setBorder(BorderFactory.createTitledBorder(horario.getDescricao()));
         this.setLayout(new GridLayout(5, 1));
         this.setFocusable(true);
         this.setOpaque(false);
         this.setTransferHandler(new TextHandler());
+        iniciaEscala();
+    }
+
+    private void iniciaEscala() {
+        for (Escala escala : escalas) {
+            add(new JPanelAnalista(this, escala.getAnalista()));
+            validate();
+        }
     }
 
     public void removeAnalista(JPanelAnalista panelAnalista) {
-        panelDia.removerParticipante(panelAnalista.getTexto());
+        panelDia.removerParticipante(panelAnalista.getAnalista());
         this.remove(panelAnalista);
         this.validate();
         this.repaint();
@@ -45,6 +61,7 @@ public class DNDLabelPanel extends JPanel {
     class TextHandler extends TransferHandler {
 
         public boolean canImport(TransferHandler.TransferSupport info) {
+            //return info.isDataFlavorSupported(AnalistaTransferable.LIST_ITEM_DATA_FLAVOR);
             return getPropertyDataFlavor(String.class, info.getDataFlavors()) != null;
         }
 
@@ -57,9 +74,13 @@ public class DNDLabelPanel extends JPanel {
             // Get the string that is being dropped.
             Transferable t = info.getTransferable();
             String data = "";
+            Analista analista = null;
             try {
 
                 data = (String) t.getTransferData(getPropertyDataFlavor(String.class, info.getDataFlavors()));
+                analista = panelDia.encontraAnalista(data);
+                //analista = (Analista) t.getTransferData(AnalistaTransferable.LIST_ITEM_DATA_FLAVOR);
+                //analista = (Analista) t.getTransferData(getPropertyDataFlavor(Analista.class, info.getDataFlavors()));
             } catch (Exception e) {
                 e.printStackTrace();
                 return false;
@@ -72,18 +93,12 @@ public class DNDLabelPanel extends JPanel {
                             JOptionPane.showMessageDialog(null, "Nome \"" + data + "\" já adicionado a essa horário");
                             return false;
                         }
-                        /*JLabel label = (JLabel) c;
-                        System.out.println("labekl "+label.getText()+" data"+data);
-                        if (label.getText().equals(data)) {
-                            JOptionPane.showMessageDialog(null, "Nome \"" + data + "\" já adicionado a essa horário");
-                            break;
-                        }*/
                     }
                 }
             }
-            if (panelDia.addParticipante(data)) {
+            if (panelDia.addParticipante(analista, horario)) {
                 //panel.add(new JLabel(text));
-                getThis().add(new JPanelAnalista(getThis(), data));
+                getThis().add(new JPanelAnalista(getThis(), analista));
                 getThis().validate();
             }
 
@@ -123,4 +138,30 @@ public class DNDLabelPanel extends JPanel {
         return null;
     }
 
+    /* public static class AnalistaTransferable implements Transferable {
+
+        public static final DataFlavor LIST_ITEM_DATA_FLAVOR = new DataFlavor(Analista.class, "java/Analista");
+        private Analista analistaItem;
+
+        public AnalistaTransferable(Analista analistaItem) {
+            this.analistaItem = analistaItem;
+        }
+
+        @Override
+        public DataFlavor[] getTransferDataFlavors() {
+            return new DataFlavor[]{LIST_ITEM_DATA_FLAVOR};
+        }
+
+        @Override
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return flavor.equals(LIST_ITEM_DATA_FLAVOR);
+        }
+
+        @Override
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+
+            return analistaItem;
+
+        }
+    }*/
 }

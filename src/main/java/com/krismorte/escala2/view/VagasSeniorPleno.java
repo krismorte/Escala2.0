@@ -19,7 +19,7 @@ public class VagasSeniorPleno extends javax.swing.JDialog {
     private VagasSeniorPleno(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
-        for (int i = 1; i <= 10; i++) {
+        for (int i = 0; i <= 6; i++) {
             boxPleno.addItem("" + i);
             boxSenior.addItem("" + i);
         }

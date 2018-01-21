@@ -35,7 +35,7 @@ public class CrudService {
     private AnalistaDao analistaDao = new AnalistaDao();
     private EscalaDao escalaDao = new EscalaDao();
 
-    public void salvarEscala(LocalDate data, Analista analista, Equipe equipe, Horario horario) {
+    public Escala salvarEscala(LocalDate data, Analista analista, Equipe equipe, Horario horario) {
         Escala escala = new Escala();
         escala.setAnalista(analista);
         escala.setData(data);
@@ -45,6 +45,7 @@ public class CrudService {
         escalaDao.beginTransaction();
         escalaDao.save(escala);
         escalaDao.commitAndCloseTransaction();
+        return escala;
     }
 
     public void removerEscala(LocalDate data, Analista analista) {
@@ -54,7 +55,6 @@ public class CrudService {
         escalaDao.beginTransaction();
         CriteriaDelete delete = filtro.processaDelete(escalaDao.getEntityManager().getCriteriaBuilder());
         escalaDao.execUpdate(delete);
-        //int total = escalaDao.deleteDate(data, analista);
         escalaDao.commitAndCloseTransaction();
     }
 

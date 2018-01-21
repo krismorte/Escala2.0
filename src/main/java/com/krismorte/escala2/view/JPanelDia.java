@@ -67,8 +67,9 @@ public class JPanelDia extends JPanel {
         return panelMes.addParticipante(this, analista);
     }
 
-    public void removerParticipante(Analista analista) {
-        panelMes.removerParticipante(data, analista);
+    public void removerParticipante(Analista analista, Horario horario) {
+        horarioEscolhido = horario;
+        panelMes.removerParticipante(this,data, analista);
     }
 
     public Horario horarioEscolhido() {

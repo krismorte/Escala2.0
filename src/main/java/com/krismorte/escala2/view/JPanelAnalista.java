@@ -37,7 +37,6 @@ public class JPanelAnalista extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println("com.krismorte.escala2.view.JPanelAnalista.actionPerformed()");
         panelDia.removeAnalista(this);
     }
 

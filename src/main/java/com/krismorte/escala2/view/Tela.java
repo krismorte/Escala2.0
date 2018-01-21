@@ -27,10 +27,10 @@ import javax.swing.JOptionPane;
  * @author c007329
  */
 public class Tela extends javax.swing.JFrame {
-    
+
     private ObjectComboBoxModel<Equipe> boxModel;
     private List<DNDLabelPanel> panels = new ArrayList<>();
-    
+
     private LocalDate mesAtual;
     private List<Analista> analistas;
     private List<Equipe> equipes = new ArrayList<>();
@@ -51,18 +51,20 @@ public class Tela extends javax.swing.JFrame {
             boxEquipe.setEnabled(false);
         }
     }
-    
+
     private void init() {
         setLogo();
+        enableNavigateButton(false);
         loadBox();
+        labelMes.setText("Selecione a equipe");
         splitPanel.setDividerLocation(200);
         this.setExtendedState(this.getExtendedState() | JFrame.MAXIMIZED_BOTH);
-        
+
         panelAnalistas.setLayout(new GridLayout(20, 1));
         panelAnalistas.setOpaque(false);
         mesAtual = LocalDate.of(LocalDateTime.now().getYear(), LocalDateTime.now().getMonthValue(), 1);
     }
-    
+
     private void setLogo() {
         try {
             setIconImage(ImageIO.read(ClassLoader.getSystemResource("img/calendar-20-20.png")));
@@ -70,7 +72,7 @@ public class Tela extends javax.swing.JFrame {
             e.printStackTrace();
         }
     }
-    
+
     private void loadBox() {
         equipes = crudService.listarEquipes();
         boxModel = new ObjectComboBoxModel<Equipe>();
@@ -81,30 +83,34 @@ public class Tela extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent e) {
                 if (boxModel.getSelectedObject() != null) {
                     loadJLabel();
-                    atualizaCalendario(mesAtual);
+                    enableNavigateButton(true);
+                    atualizaCalendario();
                 }
             }
         });
     }
-    
+
     private void loadJLabel() {
         analistas = crudService.listarAnalistasPorEquipe(boxModel.getSelectedObject());
         panelAnalistas.removeAll();
         panelAnalistas.revalidate();
         panelAnalistas.repaint(); // sometimes needed, this appears to be one of them
-        //analistas.forEach(analista -> panelAnalistas.add(getLabel(analista.getNome())));
-        //analistas.forEach(analista -> panelAnalistas.add(new JLabelAnalista(analista)));
         analistas.forEach(analista -> panelAnalistas.add(JLabelAnalista.transferable(analista)));
     }
-    
-    private void atualizaCalendario(LocalDate data) {
+
+    private void enableNavigateButton(Boolean enable) {
+        btnAfter.setEnabled(enable);
+        btnNext.setEnabled(enable);
+    }
+
+    private void atualizaCalendario() {
         if (boxModel.getSelectedObject() != null) {
             horarios = crudService.listarHorariosPorEquipe(boxModel.getSelectedObject());
         }
         labelMes.setText(mesAtual.format(Tradutor.getMothFormater()) + "/" + mesAtual.getYear());
         panelCalendario.removeAll();
         panelCalendario.setLayout(new GridLayout(1, 1));
-        panelCalendario.add(new JPanelMes(data, boxModel.getSelectedObject(), analistas, horarios));
+        panelCalendario.add(new JPanelMes(mesAtual, boxModel.getSelectedObject(), analistas, horarios));
     }
 
     /**
@@ -270,12 +276,12 @@ public class Tela extends javax.swing.JFrame {
 
     private void btnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNextActionPerformed
         mesAtual = mesAtual.plusMonths(1);
-        atualizaCalendario(mesAtual);
+        atualizaCalendario();
     }//GEN-LAST:event_btnNextActionPerformed
 
     private void btnAfterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAfterActionPerformed
         mesAtual = mesAtual.minusMonths(1);
-        atualizaCalendario(mesAtual);
+        atualizaCalendario();
     }//GEN-LAST:event_btnAfterActionPerformed
 
     private void btnHorarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHorarioActionPerformed

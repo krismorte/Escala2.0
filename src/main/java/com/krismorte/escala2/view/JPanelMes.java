@@ -28,7 +28,6 @@ public class JPanelMes extends JPanel {
     private Equipe equipe;
     private List<Escala> escalas;
     private List<Analista> analistas;
-    private List<String[]> participante = new ArrayList<>();
     private List<Horario> horarios;
     private int maximoFrequenciaEscala = 3;
     private LocalDate mesInicio;
@@ -40,7 +39,7 @@ public class JPanelMes extends JPanel {
         this.equipe = equipe;
         this.mesInicio = mesAtual;
         this.analistas = analistas;
-        int ultimoDiaDoMes = LocalDate.now().with(TemporalAdjusters.lastDayOfMonth()).getDayOfMonth();
+        int ultimoDiaDoMes = mesAtual.with(TemporalAdjusters.lastDayOfMonth()).getDayOfMonth();
         this.mesFim = LocalDate.of(mesAtual.getYear(), mesAtual.getMonthValue(), ultimoDiaDoMes);
         updateMoth(mesAtual);
     }
@@ -52,7 +51,8 @@ public class JPanelMes extends JPanel {
         this.setOpaque(false);
         int totalSabados = 0;
         int totalDomingos = 0;
-        escalas = crudService.listaEscalaPorMes(mesInicio, mesFim,equipe);
+        escalas = crudService.listaEscalaPorMes(mesInicio, mesFim, equipe);
+
         List<Horario> horariosSabado = new ArrayList<>();
         List<Horario> horariosDomingo = new ArrayList<>();
         for (Horario horario : horarios) {
@@ -97,52 +97,56 @@ public class JPanelMes extends JPanel {
     }
 
     public boolean addParticipante(JPanelDia panelDia, Analista analista) {
-        if (contaParticipante(analista.getNome()) == maximoFrequenciaEscala) {
+        if (contaParticipante(analista) == maximoFrequenciaEscala) {
             JOptionPane.showMessageDialog(null, "Participante \"" + analista.getNome() + "\" já foi adicionado " + maximoFrequenciaEscala + " vezes");
             return false;
         }
-        boolean jaExiste = encontraParticipante("" + panelDia.getData().getDayOfMonth(), analista.getNome());
+        boolean jaExiste = encontraParticipante(panelDia.getData(), analista) != null;
         if (jaExiste) {
             JOptionPane.showMessageDialog(null, "Participante \"" + analista.getNome() + "\" já adicionado a essa dia");
             return false;
         }
         if (panelDia.eSabado()) {
             LocalDate nextData = panelDia.getData().plusDays(1);
-            //jaExiste = encontraParticipante(JPanelDia.titleToString(nextData), analista.getNome());
-            jaExiste = encontraParticipante("" + nextData.getDayOfMonth(), analista.getNome());
+            jaExiste = encontraParticipante(nextData, analista) != null;
         }
         if (panelDia.eDomingo()) {
             LocalDate lastData = panelDia.getData().minusDays(1);
-            //jaExiste = encontraParticipante(JPanelDia.titleToString(nextData), analista.getNome());
-            jaExiste = encontraParticipante("" + lastData.getDayOfMonth(), analista.getNome());
+            jaExiste = encontraParticipante(lastData, analista) != null;
         }
+
         if (jaExiste) {
             JOptionPane.showMessageDialog(null, "Participante \"" + analista.getNome() + "\" já adicionado a essa final de semana");
             return false;
         } else {
-            String[] array = new String[2];
-            array[0] = "" + panelDia.getData().getDayOfMonth();//panelDia.getTitle();
-            array[1] = analista.getNome();
-            participante.add(array);
-            crudService.salvarEscala(panelDia.getData(), analista, analista.getEquipe(), panelDia.horarioEscolhido());
+            Escala escala = crudService.salvarEscala(panelDia.getData(), analista, analista.getEquipe(), panelDia.horarioEscolhido());
+            escalas.add(escala);
         }
         return true;
     }
 
-    private boolean encontraParticipante(String title, String text) {
-        for (String[] s : participante) {
-            if (s[0].equals(title) & s[1].equals(text)) {
-                return true;
-            }
-        }
+    private boolean validaVagasHorario(Horario horario) {
+        boolean retornoOk = false;
+        for (Escala escala : escalas) {
 
-        return false;
+        }
+        return retornoOk;
     }
 
-    private int contaParticipante(String text) {
+    private Escala encontraParticipante(LocalDate date, Analista analista) {
+        Escala escalaEncontrada = null;
+        for (Escala escala : escalas) {
+            if (escala.getData().equals(date) & escala.getAnalista().equals(analista)) {
+                escalaEncontrada = escala;
+            }
+        }
+        return escalaEncontrada;
+    }
+
+    private int contaParticipante(Analista analista) {
         int frequencia = 0;
-        for (String[] s : participante) {
-            if (s[1].equals(text)) {
+        for (Escala escala : escalas) {
+            if (escala.getAnalista().equals(analista)) {
                 frequencia++;
             }
         }
@@ -150,17 +154,15 @@ public class JPanelMes extends JPanel {
         return frequencia;
     }
 
-    public void removerParticipante(LocalDate data, Analista analista) {
-        System.out.println("com.krismorte.escala2.view.JPanelMes.removerParticipante()");
-        for (String[] s : participante) {
-            System.out.println(s[0] + "=" + data.getDayOfMonth() + " " + s[1] + "=" + analista.getNome());
-            if (s[0].trim().equals("" + data.getDayOfMonth()) & s[1].trim().equals(analista.getNome().trim())) {
-                System.out.println("Removeu");
-                participante.remove(s);
+    public void removerParticipante(JPanelDia panelDia, LocalDate data, Analista analista) {
+        for (Escala escala : escalas) {
+            if (escala.getData().equals(data) & escala.getAnalista().equals(analista)) {
                 crudService.removerEscala(data, analista);
                 break;
             }
         }
+        Escala escala = encontraParticipante(data, analista);
+        escalas.remove(escala);
     }
 
     public Analista encontraAnalista(String nome) {
@@ -172,10 +174,6 @@ public class JPanelMes extends JPanel {
             }
         }
         return analistaEncontrado;
-    }
-
-    public List<String[]> getParticipante() {
-        return participante;
     }
 
 }

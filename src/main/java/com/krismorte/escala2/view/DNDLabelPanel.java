@@ -52,7 +52,7 @@ public class DNDLabelPanel extends JPanel {
     }
 
     public void removeAnalista(JPanelAnalista panelAnalista) {
-        panelDia.removerParticipante(panelAnalista.getAnalista());
+        panelDia.removerParticipante(panelAnalista.getAnalista(), horario);
         this.remove(panelAnalista);
         this.validate();
         this.repaint();
@@ -61,7 +61,6 @@ public class DNDLabelPanel extends JPanel {
     class TextHandler extends TransferHandler {
 
         public boolean canImport(TransferHandler.TransferSupport info) {
-            //return info.isDataFlavorSupported(AnalistaTransferable.LIST_ITEM_DATA_FLAVOR);
             return getPropertyDataFlavor(String.class, info.getDataFlavors()) != null;
         }
 
@@ -79,8 +78,6 @@ public class DNDLabelPanel extends JPanel {
 
                 data = (String) t.getTransferData(getPropertyDataFlavor(String.class, info.getDataFlavors()));
                 analista = panelDia.encontraAnalista(data);
-                //analista = (Analista) t.getTransferData(AnalistaTransferable.LIST_ITEM_DATA_FLAVOR);
-                //analista = (Analista) t.getTransferData(getPropertyDataFlavor(Analista.class, info.getDataFlavors()));
             } catch (Exception e) {
                 e.printStackTrace();
                 return false;
@@ -97,7 +94,6 @@ public class DNDLabelPanel extends JPanel {
                 }
             }
             if (panelDia.addParticipante(analista, horario)) {
-                //panel.add(new JLabel(text));
                 getThis().add(new JPanelAnalista(getThis(), analista));
                 getThis().validate();
             }

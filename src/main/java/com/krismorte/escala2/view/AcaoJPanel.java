@@ -40,8 +40,6 @@ public class AcaoJPanel implements iDropAction {
             }
         }
         if (panelDia.addParticipante(analista, panelDia.horarioEscolhido())) {
-            //panel.add(new JLabel(text));
-            //panel.add(new JPanelAnalista(panelDia,text));
             panel.validate();
         }
 

@@ -15,7 +15,7 @@ import javax.persistence.Table;
  * @author c007329
  */
 @Entity
-@Table(name = "dbo.scl_escala")
+@Table(name = "scl_escala")
 public class Escala extends IdentityAndAudit {
 
     private LocalDate data;

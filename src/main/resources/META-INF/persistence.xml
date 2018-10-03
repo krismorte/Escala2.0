@@ -4,11 +4,15 @@
     <persistence-unit name="SQP19DUP999" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <properties>
-            <property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
-            <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://s1sqlp01\bd01:1433;databaseName=horaextra"/>
-            <property name="javax.persistence.jdbc.user" value="hora"/>
+            <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://s1sqlp01\bd01:1433;databaseName=horaextra"/>-->
+            <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/Service"/>
+            <!--<property name="javax.persistence.jdbc.user" value="hora"/>-->
+            <property name="javax.persistence.jdbc.user" value="postgres"/>
             <property name="javax.persistence.jdbc.password" value="P@$$w0rd"/>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.SQLServer2008Dialect"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <!--<property name="hibernate.dialect" value="org.hibernate.dialect.SQLServer2008Dialect"/>-->
             <property name="hibernate.hbm2ddl.auto" value="update"/>
             <property name="hibernate.show_sql" value="false"/>
             <property name="hibernate.format_sql" value="false"/>

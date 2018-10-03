@@ -17,7 +17,7 @@ import javax.persistence.Table;
  * @author c007329
  */
 @Entity
-@Table(name = "dbo.scl_analista")
+@Table(name = "scl_analista")
 public class Analista extends IdentityAndAudit {
 
     @Column(length = 70)

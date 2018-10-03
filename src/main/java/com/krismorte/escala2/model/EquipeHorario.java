@@ -15,7 +15,7 @@ import javax.persistence.Table;
  * @author c007329
  */
 @Entity
-@Table(name = "dbo.scl_equipe_horario")
+@Table(name = "scl_equipe_horario")
 public class EquipeHorario extends IdentityAndAudit {
 
     @ManyToOne

@@ -15,7 +15,7 @@ import javax.persistence.Table;
  * @author c007329
  */
 @Entity
-@Table(name = "dbo.scl_horario")
+@Table(name = "scl_horario")
 public class Horario extends IdentityAndAudit {
 
     @Resolvable(colName = "Descrição")

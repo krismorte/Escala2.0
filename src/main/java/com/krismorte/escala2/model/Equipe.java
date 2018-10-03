@@ -17,7 +17,7 @@ import javax.persistence.Transient;
  * @author c007329
  */
 @Entity
-@Table(name = "dbo.scl_equipe")
+@Table(name = "scl_equipe")
 public class Equipe extends IdentityAndAudit {
 
     @Column(length = 70)
